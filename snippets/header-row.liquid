@@ -57,11 +57,15 @@
         {% unless key == blank %}
           {% case key %}
             {% when 'first' %}
-              {{ first }}
+              {% if first == 'mobile_menu' %}
+                {% content_for 'block', type: '_header-menu', id: 'header-menu', variant: 'mobile' %}
+              {% else %}
+                {{ first }}
+              {% endif %}
             {% when 'logo' %}
-              {{ logo }}
+              {% content_for 'block', type: '_header-logo', id: 'header-logo' %}
             {% when 'menu' %}
-              {{ menu }}
+              {% content_for 'block', type: '_header-menu', id: 'header-menu' %}
             {% when 'localization' %}
               {{ localization }}
             {% when 'search' %}
