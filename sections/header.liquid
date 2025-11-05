@@ -18,8 +18,10 @@
 
   assign show_preheader = false
 
-  if section.settings.show_preheader and (section.settings.preheader_text != blank or preheader_links.size > 0)
-    assign show_preheader = true
+  if section.settings.show_preheader
+    if section.settings.preheader_text != blank or preheader_links.size > 0
+      assign show_preheader = true
+    endif
   endif
 
   if section.settings.show_search
@@ -55,25 +57,22 @@
     endif
   endif
 
-  capture logo
-    content_for 'block', type: '_header-logo', id: 'header-logo'
-  endcapture
-
-  capture menu
-    content_for 'block', type: '_header-menu', id: 'header-menu'
-  endcapture
-
-  capture mobile_menu
-    content_for 'block', type: '_header-menu', id: 'header-menu', variant: 'mobile'
-  endcapture
-
-  capture navigation_bar
-    content_for 'block', type: '_header-menu', id: 'header-menu', variant: 'navigation_bar', transparent: transparent
-  endcapture
-
   capture actions
     render 'header-actions'
   endcapture
+
+  assign has_header_menu_block = false
+  assign navigation_bar_enabled = false
+
+  for block in section.blocks
+    if block.type == '_header-menu'
+      assign has_header_menu_block = true
+
+      if block.settings.navigation_bar
+        assign navigation_bar_enabled = true
+      endif
+    endif
+  endfor
 
   if shop.customer_accounts_enabled
     assign search_class = 'mobile:hidden'
@@ -235,7 +234,11 @@
 
       case row
         when 'top'
-          assign first = mobile_menu
+          if has_header_menu_block
+            assign first = 'mobile_menu'
+          else
+            assign first = ''
+          endif
 
           if bottom_row_blocks.size > 0 and section.settings.divider_size == 'page-width'
             assign class = class | append: ' divider--page-width'
@@ -266,8 +269,6 @@
         order: order,
         settings: section.settings,
         first: first,
-        logo: logo,
-        menu: menu,
         actions: actions,
         localization: localization_markup,
         search: search,
@@ -291,9 +292,9 @@
     {% endif %}
   {% endfor %}
 
-  {% if navigation_bar != blank %}
+  {% if navigation_bar_enabled %}
     <div class="header__row header__row--mobile desktop:hidden color-{{ section.settings.color_scheme_bottom }}">
-      {{ navigation_bar }}
+      {% content_for 'block', type: '_header-menu', id: 'header-menu', variant: 'navigation_bar', transparent: transparent %}
     </div>
   {% endif %}
 </header-component>
