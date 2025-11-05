@@ -10,6 +10,18 @@
   assign rows = 'top,bottom' | split: ','
   assign search_style = 'none'
 
+  assign preheader_links = ''
+
+  if section.settings.preheader_menu != blank
+    assign preheader_links = section.settings.preheader_menu.links
+  endif
+
+  assign show_preheader = false
+
+  if section.settings.show_preheader and (section.settings.preheader_text != blank or preheader_links.size > 0)
+    assign show_preheader = true
+  endif
+
   if section.settings.show_search
     assign search_style = 'modal'
   endif
@@ -154,7 +166,7 @@
     assign collapse_header_paddings_class = 'header--collapse-row-paddings'
   endif
 
-  assign class = 'header'
+  assign class = 'header header--professional'
 
   if transparent_color_scheme
     assign class = class | append: ' ' | append: transparent_color_scheme
@@ -200,6 +212,22 @@
   {%- if request.page_type == 'index' -%}
     <h1 class="visually-hidden">{{ shop.name }}</h1>
   {%- endif -%}
+  {% if show_preheader %}
+    <div class="header__preheader color-{{ section.settings.color_scheme_top }} section section--full-width-margin section--{{ section.settings.section_width }}">
+      <div class="header__preheader-bound">
+        {% if section.settings.preheader_text != blank %}
+          <span class="header__preheader-text">{{ section.settings.preheader_text }}</span>
+        {% endif %}
+        {% if preheader_links.size > 0 %}
+          <nav class="header__preheader-nav" aria-label="Top bar navigation">
+            {% for link in preheader_links %}
+              <a class="header__preheader-link" href="{{ link.url }}">{{ link.title }}</a>
+            {% endfor %}
+          </nav>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
   {% for row in rows %}
     {% liquid
       assign scheme = 'color_scheme_' | append: row
@@ -545,6 +573,186 @@
     }
   }
 
+  .header--professional {
+    border-bottom: 1px solid rgb(var(--color-border-rgb) / 0.15);
+    box-shadow: 0 12px 24px rgb(var(--color-shadow-rgb) / 0.1);
+  }
+
+  .header--professional .header__row--top {
+    border-bottom: none;
+  }
+
+  .header--professional .header__row--top .header__columns {
+    align-items: center;
+    gap: clamp(1.5rem, 3vw, 3.5rem);
+  }
+
+  .header--professional .header__column--left {
+    gap: clamp(1rem, 2vw, 2.5rem);
+  }
+
+  .header--professional .header__column--right {
+    gap: clamp(1rem, 2vw, 2.5rem);
+  }
+
+  .header--professional header-menu .menu-list__link {
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    position: relative;
+    padding-block-end: calc(var(--padding-3xs) + 2px);
+  }
+
+  .header--professional header-menu .menu-list__link::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: calc(-1 * var(--padding-xs));
+    height: 3px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0;
+    transform: scaleX(0.45);
+    transform-origin: center;
+    transition: opacity var(--animation-speed) var(--animation-easing),
+      transform var(--animation-speed) var(--animation-easing);
+  }
+
+  .header--professional .menu-list__list-item:where(:hover, :focus-within) .menu-list__link::after,
+  .header--professional .menu-list__link--active::after,
+  .header--professional .menu-list__list-item[slot='overflow'] .menu-list__link[aria-expanded='true']::after {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .header--professional .search-action {
+    width: min(320px, 100%);
+  }
+
+  .header--professional .search-modal__button {
+    width: 100%;
+    justify-content: flex-start;
+    gap: var(--gap-sm);
+    padding-inline: var(--padding-lg);
+    padding-block: calc(var(--padding-2xs) + 2px);
+    border-radius: 999px;
+    border: 1px solid rgb(var(--color-foreground-rgb) / 0.15);
+    background: rgb(var(--color-foreground-rgb) / 0.04);
+    transition: border-color var(--animation-speed) var(--animation-easing),
+      background-color var(--animation-speed) var(--animation-easing);
+  }
+
+  .header--professional .search-modal__button:hover,
+  .header--professional .search-modal__button:focus-visible {
+    border-color: rgb(var(--color-foreground-rgb) / 0.35);
+    background: rgb(var(--color-foreground-rgb) / 0.08);
+  }
+
+  .header--professional .search-action__label {
+    display: inline-flex;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgb(var(--color-foreground-rgb) / 0.75);
+  }
+
+  .header--professional .search-action .svg-wrapper {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .header--professional .header-actions__action {
+    border-radius: 999px;
+    padding: var(--padding-2xs);
+  }
+
+  .header--professional .header-actions__action:is(:hover, :focus-visible) {
+    background: rgb(var(--color-foreground-rgb) / 0.08);
+  }
+
+  .header--professional header-actions {
+    gap: var(--gap-md);
+  }
+
+  .header__preheader {
+    border-bottom: 1px solid rgb(var(--color-border-rgb) / 0.2);
+  }
+
+  .header__preheader-bound {
+    width: min(100%, var(--page-width, 1200px));
+    margin-inline: auto;
+    padding-inline: var(--page-margin, 1.5rem);
+    padding-block: calc(var(--padding-2xs) + 2px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-lg);
+  }
+
+  .header__preheader-text {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .header__preheader-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-lg);
+    flex-wrap: wrap;
+  }
+
+  .header__preheader-link {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--animation-speed) var(--animation-easing);
+  }
+
+  .header__preheader-link:is(:hover, :focus-visible) {
+    color: var(--menu-top-level-font-color, var(--color-foreground));
+    text-decoration: underline;
+  }
+
+  @media screen and (max-width: 989px) {
+    .header--professional .header__row--top .header__columns {
+      gap: var(--gap-lg);
+    }
+
+    .header--professional .search-action {
+      width: auto;
+    }
+
+    .header--professional .search-modal__button {
+      padding-inline: var(--padding-md);
+    }
+
+    .header__preheader-bound {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--gap-sm);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .header__preheader {
+      display: none;
+    }
+
+    .header--professional .search-action__label {
+      display: none;
+    }
+
+    .header--professional .search-modal__button {
+      padding-inline: var(--padding-sm);
+    }
+  }
+
   /* Single column layout if there are no columns within */
   .header__columns:not(:has(.header__column)) {
     grid-template-columns: 1fr;
@@ -657,6 +865,27 @@
   "tag": "header",
   "class": "header-section",
   "settings": [
+    {
+      "type": "header",
+      "content": "Professional top bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_preheader",
+      "label": "Show top bar",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "preheader_text",
+      "label": "Top bar message",
+      "default": "Complimentary shipping on orders over $99"
+    },
+    {
+      "type": "link_list",
+      "id": "preheader_menu",
+      "label": "Top bar menu"
+    },
     {
       "type": "header",
       "content": "t:content.logo"
