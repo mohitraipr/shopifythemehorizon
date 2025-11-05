@@ -1,0 +1,277 @@
+{% comment %}
+  Section: FWD‑style Category Landing Page (CLP)
+  Mobile‑first, responsive, lightweight.
+  Drop this file into sections/clp-fwd.liquid and add it to a JSON template.
+{% endcomment %}
+
+<section
+  id="clp-fwd"
+  class="clp"
+  style="--clp-bg: {{ section.settings.bg | default: '#ffffff' }}; --clp-fg: {{ section.settings.fg | default: '#111111' }}; --clp-max: {{ section.settings.max_width | default: 1200 }}px;"
+>
+  <div class="clp__container">
+    {%- assign hero_m = section.settings.hero_image_mobile -%}
+    {%- assign hero_d = section.settings.hero_image_desktop | default: section.settings.hero_image_mobile -%}
+
+    <!-- HERO -->
+    <div class="clp-hero">
+      <picture>
+        {%- if hero_d != blank -%}
+          <source media="(min-width: 768px)" srcset="{{ hero_d | image_url: width: 1800 }} 1800w, {{ hero_d | image_url: width: 1200 }} 1200w, {{ hero_d | image_url: width: 900 }} 900w" sizes="(min-width: 1024px) 100vw, 100vw">
+        {%- endif -%}
+        {%- if hero_m != blank -%}
+          {{ hero_m | image_url: width: 1200 | image_tag: widths: '800,1200', sizes: '100vw', alt: section.settings.title, class: 'clp-hero__img', loading: 'eager', decoding: 'async', fetchpriority: 'high' }}
+        {%- else -%}
+          <div class="clp-hero__placeholder" aria-hidden="true"></div>
+        {%- endif -%}
+      </picture>
+      <div class="clp-hero__content">
+        {%- if section.settings.title != blank -%}
+          <h1 class="clp-hero__title">{{ section.settings.title }}</h1>
+        {%- endif -%}
+        {%- if section.settings.subtitle != blank -%}
+          <p class="clp-hero__subtitle">{{ section.settings.subtitle }}</p>
+        {%- endif -%}
+        {%- if section.settings.cta_label != blank and section.settings.cta_url != blank -%}
+          <a class="clp-btn" href="{{ section.settings.cta_url }}">{{ section.settings.cta_label }}</a>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <!-- FILTER CHIPS / QUICK LINKS -->
+    {%- assign chip_blocks = section.blocks | where: 'type', 'chip' -%}
+    {%- if chip_blocks.size > 0 -%}
+      <nav class="clp-chips" aria-label="Quick filters">
+        <ul class="clp-chips__list">
+          {%- for b in chip_blocks -%}
+            <li class="clp-chips__item">
+              {%- assign u = b.settings.url | default: '#' -%}
+              <a class="clp-chip" href="{{ u }}">{{ b.settings.label | default: 'Explore' }}</a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+
+    <!-- CATEGORY GRID (TILES) -->
+    {%- assign cat_blocks = section.blocks | where: 'type', 'category' -%}
+    {%- if cat_blocks.size > 0 -%}
+      <section class="clp-categories" aria-labelledby="clp-categories-title">
+        <h2 id="clp-categories-title" class="clp-section-title">Shop by category</h2>
+        <div class="clp-grid">
+          {%- for b in cat_blocks -%}
+            <a class="clp-tile" href="{{ b.settings.url | default: '#' }}">
+              {%- if b.settings.image != blank -%}
+                {{ b.settings.image | image_url: width: 900 | image_tag: widths: '300,600,900', sizes: '(min-width: 1024px) 20vw, 45vw', alt: b.settings.label, class: 'clp-tile__img', loading: 'lazy', decoding: 'async' }}
+              {%- else -%}
+                <span class="clp-tile__ph"></span>
+              {%- endif -%}
+              <span class="clp-tile__label">{{ b.settings.label | default: 'Category' }}</span>
+            </a>
+          {%- endfor -%}
+        </div>
+      </section>
+    {%- endif -%}
+
+    <!-- FEATURED COLLECTION SLIDER -->
+    {%- if section.settings.featured_collection != blank -%}
+      <section class="clp-featured" aria-labelledby="clp-featured-title">
+        <div class="clp-featured__hdr">
+          <h2 id="clp-featured-title" class="clp-section-title">Editor's picks</h2>
+          <div class="clp-slider-ctrls" aria-hidden="false">
+            <button class="clp-arrow" type="button" data-dir="-1" aria-label="Scroll left">&#8592;</button>
+            <button class="clp-arrow" type="button" data-dir="1" aria-label="Scroll right">&#8594;</button>
+          </div>
+        </div>
+        <div class="clp-slider" role="region" aria-roledescription="carousel">
+          <ul class="clp-slider__track" tabindex="0">
+            {%- assign limit = section.settings.featured_limit | default: 8 -%}
+            {%- for product in section.settings.featured_collection.products limit: limit -%}
+              <li class="clp-card" role="group" aria-label="{{ forloop.index }} of {{ limit }}">
+                <a class="clp-card__link" href="{{ product.url }}">
+                  {%- if product.featured_image -%}
+                    {{ product.featured_image | image_url: width: 900 | image_tag: widths: '300,600,900', sizes: '70vw', alt: product.title, class: 'clp-card__img', loading: 'lazy', decoding: 'async' }}
+                  {%- else -%}
+                    <span class="clp-card__ph"></span>
+                  {%- endif -%}
+                  <div class="clp-card__meta">
+                    <h3 class="clp-card__title">{{ product.title | escape }}</h3>
+                    <div class="clp-card__price">
+                      {%- if product.compare_at_price > product.price -%}
+                        <span class="clp-card__price--sale">{{ product.price | money }}</span>
+                        <s class="clp-card__price--cmp">{{ product.compare_at_price | money }}</s>
+                      {%- else -%}
+                        <span class="clp-card__price--reg">{{ product.price | money }}</span>
+                      {%- endif -%}
+                    </div>
+                  </div>
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      </section>
+    {%- endif -%}
+
+    <!-- USP STRIP -->
+    {%- assign usp_blocks = section.blocks | where: 'type', 'usp' -%}
+    {%- if section.settings.enable_usp and usp_blocks.size > 0 -%}
+      <aside class="clp-usp" aria-label="Store benefits">
+        <ul class="clp-usp__list">
+          {%- for b in usp_blocks -%}
+            <li class="clp-usp__item">{{ b.settings.text }}</li>
+          {%- endfor -%}
+        </ul>
+      </aside>
+    {%- endif -%}
+
+    <!-- COLLAPSIBLE SEO TEXT -->
+    {%- if section.settings.seo_text != blank -%}
+      <section class="clp-seo" aria-labelledby="clp-seo-title">
+        <h2 id="clp-seo-title" class="visually-hidden">About this collection</h2>
+        <div class="clp-seo__box" data-state="collapsed">
+          <div class="clp-seo__content">{{ section.settings.seo_text }}</div>
+          <button class="clp-seo__toggle" type="button" aria-expanded="false">Read more</button>
+        </div>
+      </section>
+    {%- endif -%}
+  </div>
+
+  <style>
+    /* ===============  BASE  =============== */
+    .clp{background:var(--clp-bg);color:var(--clp-fg)}
+    .clp__container{max-width:var(--clp-max);margin:0 auto;padding:0 16px}
+    .clp-section-title{font-size:1.25rem;line-height:1.2;margin:20px 0 12px;font-weight:700}
+    .visually-hidden{position:absolute!important;clip:rect(1px,1px,1px,1px);padding:0;border:0;height:1px;width:1px;overflow:hidden}
+
+    /* ===============  HERO  =============== */
+    .clp-hero{position:relative;border-radius:12px;overflow:hidden;margin:12px 0}
+    .clp-hero__img{display:block;width:100%;height:auto}
+    .clp-hero__placeholder{width:100%;padding-top:52%;background:linear-gradient(135deg,#f2f2f2,#e9e9e9)}
+    .clp-hero__content{position:absolute;left:0;bottom:0;right:0;padding:18px;background:linear-gradient(180deg,rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 80%);color:#fff}
+    .clp-hero__title{font-size:1.8rem;margin:0 0 6px}
+    .clp-hero__subtitle{font-size:.95rem;margin:0 0 12px;opacity:.9}
+    .clp-btn{display:inline-block;padding:10px 14px;border-radius:999px;background:#111;color:#fff;font-weight:600;text-decoration:none}
+
+    /* ===============  CHIPS  =============== */
+    .clp-chips{margin:10px 0 8px}
+    .clp-chips__list{display:flex;gap:8px;overflow:auto;padding-bottom:6px;scroll-snap-type:x mandatory}
+    .clp-chips__item{scroll-snap-align:start}
+    .clp-chip{display:inline-block;border:1px solid #e5e5e5;padding:8px 12px;border-radius:999px;font-size:.9rem;text-decoration:none;color:inherit;background:#fff;white-space:nowrap}
+
+    /* ===============  CATEGORY GRID  =============== */
+    .clp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .clp-tile{display:block;position:relative;border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;background:#f7f7f7}
+    .clp-tile__img{width:100%;height:auto;display:block;aspect-ratio:1/1;object-fit:cover}
+    .clp-tile__ph{display:block;width:100%;aspect-ratio:1/1;background:linear-gradient(135deg,#f4f4f4,#eaeaea)}
+    .clp-tile__label{position:absolute;left:10px;bottom:10px;background:rgba(255,255,255,.85);padding:6px 10px;border-radius:999px;font-weight:600;font-size:.9rem}
+
+    /* ===============  FEATURED  =============== */
+    .clp-featured{margin:16px 0}
+    .clp-featured__hdr{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .clp-slider{position:relative;margin-top:8px}
+    .clp-slider__track{display:flex;gap:10px;overflow:auto;scroll-snap-type:x mandatory;padding:2px}
+    .clp-card{min-width:70%;max-width:70%;scroll-snap-align:center;border-radius:12px;overflow:hidden;background:#fff;border:1px solid #eee}
+    .clp-card__link{display:block;color:inherit;text-decoration:none}
+    .clp-card__img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover}
+    .clp-card__ph{display:block;width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,#f4f4f4,#eaeaea)}
+    .clp-card__meta{padding:10px}
+    .clp-card__title{font-size:.95rem;line-height:1.25;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .clp-card__price{display:flex;gap:8px;align-items:center}
+    .clp-card__price--sale{font-weight:700}
+    .clp-card__price--cmp{opacity:.6}
+    .clp-slider-ctrls{display:flex;gap:8px}
+    .clp-arrow{appearance:none;border:1px solid #e5e5e5;background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}
+
+    /* ===============  USP STRIP  =============== */
+    .clp-usp{margin:18px 0}
+    .clp-usp__list{display:flex;flex-wrap:wrap;gap:8px}
+    .clp-usp__item{background:#f6f6f6;border:1px solid #eee;padding:8px 10px;border-radius:999px;font-size:.9rem}
+
+    /* ===============  SEO  =============== */
+    .clp-seo__box{border:1px solid #eee;border-radius:12px;padding:14px;background:#fff}
+    .clp-seo__content{max-height:4.5rem;overflow:hidden;transition:max-height .3s ease}
+    .clp-seo__box[data-state="expanded"] .clp-seo__content{max-height:100vh}
+    .clp-seo__toggle{margin-top:10px;appearance:none;border:0;background:#111;color:#fff;border-radius:8px;padding:8px 12px;font-weight:600}
+
+    /* ===============  DESKTOP  =============== */
+    @media (min-width: 768px){
+      .clp-hero__title{font-size:2.4rem}
+      .clp-hero__subtitle{font-size:1.05rem}
+      .clp-grid{grid-template-columns:repeat(3,1fr);gap:14px}
+      .clp-card{min-width:32%;max-width:32%}
+    }
+    @media (min-width: 1024px){
+      .clp-grid{grid-template-columns:repeat(5,1fr)}
+      .clp-card{min-width:24%;max-width:24%}
+    }
+  </style>
+
+  <script>
+    (function(){
+      const root = document.getElementById('clp-fwd');
+      if(!root) return;
+
+      // SEO toggle
+      const seoBox = root.querySelector('.clp-seo__box');
+      if(seoBox){
+        const btn = seoBox.querySelector('.clp-seo__toggle');
+        btn && btn.addEventListener('click', function(){
+          const expanded = seoBox.getAttribute('data-state') === 'expanded';
+          seoBox.setAttribute('data-state', expanded ? 'collapsed' : 'expanded');
+          this.setAttribute('aria-expanded', String(!expanded));
+          this.textContent = expanded ? 'Read more' : 'Read less';
+        });
+      }
+
+      // Simple slider arrows (scroll-snap track)
+      const track = root.querySelector('.clp-slider__track');
+      if(track){
+        const btns = root.querySelectorAll('.clp-arrow');
+        const step = () => Math.max(track.clientWidth * 0.8, 240);
+        btns.forEach(btn => btn.addEventListener('click', function(){
+          const dir = Number(this.getAttribute('data-dir') || 1);
+          track.scrollBy({ left: dir * step(), behavior: 'smooth' });
+        }));
+      }
+    })();
+  </script>
+</section>
+
+{% schema %}
+{
+  "name": "FWD‑style CLP",
+  "settings": [
+    {"type":"text","id":"title","label":"Page title","default":"FWD Edit"},
+    {"type":"textarea","id":"subtitle","label":"Subtitle","default":"Fresh fits. Clean energy."},
+    {"type":"image_picker","id":"hero_image_mobile","label":"Hero image (mobile)"},
+    {"type":"image_picker","id":"hero_image_desktop","label":"Hero image (desktop)"},
+    {"type":"text","id":"cta_label","label":"CTA label","default":"Shop now"},
+    {"type":"url","id":"cta_url","label":"CTA link"},
+    {"type":"checkbox","id":"enable_usp","label":"Show USP strip","default":true},
+    {"type":"color","id":"bg","label":"Background","default":"#ffffff"},
+    {"type":"color","id":"fg","label":"Text color","default":"#111111"},
+    {"type":"range","id":"max_width","min":960,"max":1440,"step":10,"unit":"px","label":"Max container width","default":1200},
+    {"type":"collection","id":"featured_collection","label":"Featured collection for slider"},
+    {"type":"range","id":"featured_limit","label":"Featured slider products","min":4,"max":12,"step":1,"default":8},
+    {"type":"textarea","id":"seo_text","label":"SEO copy (optional)","default":"Write 80–150 words of SEO copy here about this category. You can change or clear this later."}
+  ],
+  "blocks": [
+    {"type":"chip","name":"Filter chip","settings":[
+      {"type":"text","id":"label","label":"Label","default":"Denim"},
+      {"type":"url","id":"url","label":"Link"}
+    ]},
+    {"type":"category","name":"Category tile","settings":[
+      {"type":"image_picker","id":"image","label":"Image"},
+      {"type":"text","id":"label","label":"Label","default":"Jeans"},
+      {"type":"url","id":"url","label":"Link"}
+    ]},
+    {"type":"usp","name":"USP/Bullet","settings":[
+      {"type":"text","id":"text","label":"Text","default":"Free shipping over ₹999"}
+    ]}
+  ],
+  "presets": [
+    {"name":"FWD‑style CLP","category":"Custom"}
+  ]
+}
+{% endschema %}
