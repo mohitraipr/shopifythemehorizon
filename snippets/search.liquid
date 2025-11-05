@@ -22,6 +22,7 @@
       >
         {{ 'icon-search.svg' | inline_asset_content }}
       </span>
+      <span class="search-action__label">{{ 'content.search_input_placeholder' | t }}</span>
     </button>
   </search-button>
 {% endunless %}
@@ -32,6 +33,15 @@
     --search-border-width: var(--style-border-width-inputs);
 
     display: flex;
+  }
+
+  .search-modal__button {
+    gap: var(--gap-xs);
+  }
+
+  .search-action__label {
+    display: none;
+    white-space: nowrap;
   }
 
   .header__column--center .search-action {
