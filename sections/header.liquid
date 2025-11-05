@@ -18,8 +18,10 @@
 
   assign show_preheader = false
 
-  if section.settings.show_preheader and (section.settings.preheader_text != blank or preheader_links.size > 0)
-    assign show_preheader = true
+  if section.settings.show_preheader
+    if section.settings.preheader_text != blank or preheader_links.size > 0
+      assign show_preheader = true
+    endif
   endif
 
   if section.settings.show_search
